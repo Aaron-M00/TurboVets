@@ -1,0 +1,37 @@
+<div class="fixed inset-0 z-30 bg-black/50 flex justify-end" (click)="close.emit()">
+  <aside class="bg-surface w-full max-w-md h-full flex flex-col border-l border-line" (click)="$event.stopPropagation()">
+    <header class="bg-surface border-b border-line px-4 py-3 flex items-center justify-between">
+      <h2 class="text-sm font-semibold">Audit log</h2>
+      <button type="button" (click)="close.emit()" class="text-muted hover:text-ink text-sm">Close</button>
+    </header>
+
+    <div #scroller (scroll)="onScroll()" class="flex-1 overflow-y-auto">
+      <ul class="divide-y divide-line">
+        @for (log of audit.logs(); track log.id) {
+          <li class="px-4 py-3 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="font-medium">{{ log.action }} {{ log.resource }}</span>
+              <span class="text-[11px] uppercase font-medium px-1.5 py-0.5 rounded"
+                [class]="log.outcome === 'allowed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 text-red-600 dark:text-red-400'">
+                {{ log.outcome }}
+              </span>
+            </div>
+            <div class="text-xs text-muted mt-0.5">
+              {{ log.userEmail }} · {{ log.createdAt | date: 'MMM d, HH:mm:ss' }}
+            </div>
+          </li>
+        } @empty {
+          @if (!audit.loading()) {
+            <li class="px-4 py-6 text-sm text-muted text-center">No activity yet</li>
+          }
+        }
+      </ul>
+
+      @if (audit.loading()) {
+        <div class="px-4 py-3 text-xs text-muted text-center">Loading…</div>
+      } @else if (!audit.hasMore() && audit.logs().length > 0) {
+        <div class="px-4 py-3 text-xs text-muted text-center">— end of log —</div>
+      }
+    </div>
+  </aside>
+</div>

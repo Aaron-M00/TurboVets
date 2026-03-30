@@ -1,0 +1,138 @@
+<div class="min-h-screen flex flex-col bg-page">
+  <header class="border-b border-line bg-surface sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="h-8 w-8 rounded-md bg-brand text-white flex items-center justify-center font-semibold text-sm">T</div>
+        <h1 class="text-base font-semibold tracking-tight">Tasks</h1>
+      </div>
+
+      <div class="flex items-center gap-3">
+        @if (auth.user(); as u) {
+          <div class="hidden sm:flex flex-col items-end leading-tight">
+            <span class="text-sm font-medium">{{ u.name }}</span>
+            <span class="text-xs text-muted capitalize">{{ u.role }}</span>
+          </div>
+        }
+        <button type="button" (click)="theme.toggle()" [title]="theme.theme() === 'dark' ? 'Switch to light' : 'Switch to dark'" class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-line text-muted hover:text-ink hover:bg-soft" aria-label="Toggle theme">
+          @if (theme.theme() === 'dark') {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          }
+        </button>
+        @if (auth.canViewAudit()) {
+          <button type="button" (click)="showAudit.set(true)" class="text-sm text-muted hover:text-ink">
+            Audit
+          </button>
+        }
+        <button type="button" (click)="auth.logout()" class="text-sm text-muted hover:text-ink">
+          Sign out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+    <section class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
+      <div class="bg-surface border border-line rounded-lg p-4">
+        <div class="text-xs uppercase tracking-wide text-muted">Total</div>
+        <div class="mt-1 text-2xl font-semibold">{{ counts().total }}</div>
+      </div>
+      <div class="bg-surface border border-line rounded-lg p-4">
+        <div class="text-xs uppercase tracking-wide text-muted">In progress</div>
+        <div class="mt-1 text-2xl font-semibold">{{ counts().inProgress }}</div>
+      </div>
+      <div class="bg-surface border border-line rounded-lg p-4">
+        <div class="text-xs uppercase tracking-wide text-muted">Done</div>
+        <div class="mt-1 text-2xl font-semibold">{{ counts().done }}</div>
+      </div>
+      <div class="bg-surface border border-line rounded-lg p-4">
+        <div class="flex items-baseline justify-between">
+          <span class="text-xs uppercase tracking-wide text-muted">Progress</span>
+          <span class="text-sm font-medium">{{ progress() }}%</span>
+        </div>
+        <div class="mt-2 h-2 rounded-full bg-soft overflow-hidden">
+          <div class="h-full bg-brand transition-[width]" [style.width.%]="progress()"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+      <div class="flex items-center gap-2">
+        <input
+          type="search"
+          placeholder="Search tasks  (press / )"
+          [value]="searchTerm()"
+          (input)="onSearchInput($any($event.target).value)"
+          class="w-full sm:w-64 rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-brand"
+        />
+        <select
+          [value]="categoryFilter()"
+          (change)="categoryFilter.set($any($event.target).value)"
+          class="rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-brand"
+        >
+          <option value="all">All</option>
+          <option [value]="TaskCategory.Work">Work</option>
+          <option [value]="TaskCategory.Personal">Personal</option>
+        </select>
+      </div>
+
+      @if (auth.canMutate()) {
+        <button type="button" (click)="openCreate()" class="inline-flex items-center gap-1.5 rounded-md bg-brand text-white text-sm font-medium px-3 py-2 hover:bg-brand-hover">
+          New task
+          <kbd class="ml-1 hidden sm:inline-flex h-5 px-1.5 items-center rounded bg-black/15 text-[10px] font-mono">N</kbd>
+        </button>
+      }
+    </section>
+
+    @if (tasks.error()) {
+      <div class="mb-4 rounded-md border border-red-300 bg-red-500/10 text-red-500 px-3 py-2 text-sm">
+        {{ tasks.error() }}
+      </div>
+    }
+
+    <div cdkDropListGroup class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      @for (col of columns; track col.id) {
+        <div class="bg-soft rounded-xl border border-line p-3 flex flex-col min-h-[420px]">
+          <header class="flex items-center justify-between mb-3 px-1">
+            <h2 class="text-sm font-semibold">{{ col.title }}</h2>
+            <span class="text-xs text-muted">{{ visibleByColumn()[col.id].length }}</span>
+          </header>
+          <div
+            cdkDropList
+            [cdkDropListData]="visibleByColumn()[col.id]"
+            [cdkDropListConnectedTo]="columnIds"
+            [cdkDropListDisabled]="!auth.canMutate()"
+            (cdkDropListDropped)="handleDrop($event, col.id)"
+            class="flex-1 flex flex-col gap-2 min-h-[60px]"
+          >
+            @for (task of visibleByColumn()[col.id]; track task.id) {
+              <div cdkDrag [cdkDragData]="task">
+                <app-task-card
+                  [task]="task"
+                  [canMutate]="auth.canMutate()"
+                  (edit)="openEdit($event)"
+                  (remove)="handleDelete($event)"
+                />
+              </div>
+            } @empty {
+              <p class="text-xs text-muted text-center py-6">No tasks</p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </main>
+
+  @if (showForm()) {
+    <app-task-form
+      [task]="editing()"
+      (save)="handleSave($event)"
+      (cancel)="showForm.set(false)"
+    />
+  }
+
+  @if (showAudit()) {
+    <app-audit-panel (close)="showAudit.set(false)" />
+  }
+</div>

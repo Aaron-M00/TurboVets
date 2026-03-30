@@ -1,0 +1,50 @@
+@import '@angular/cdk/overlay-prebuilt.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --page: 248 250 252;
+    --surface: 255 255 255;
+    --ink: 15 23 42;
+    --muted: 100 116 139;
+    --line: 226 232 240;
+    --soft: 241 245 249;
+  }
+
+  .dark {
+    --page: 9 14 26;
+    --surface: 17 24 39;
+    --ink: 226 232 240;
+    --muted: 148 163 184;
+    --line: 30 41 59;
+    --soft: 22 30 47;
+  }
+
+  html,
+  body {
+    height: 100%;
+    @apply bg-page text-ink antialiased;
+    font-family: theme('fontFamily.sans');
+  }
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid theme('colors.brand.DEFAULT');
+  outline-offset: 2px;
+}
+
+.cdk-drag-preview {
+  @apply shadow-lg ring-1 ring-line bg-surface rounded-lg;
+}
+.cdk-drag-placeholder {
+  @apply opacity-30;
+}
+.cdk-drag-animating {
+  transition: transform 220ms cubic-bezier(0, 0, 0.2, 1);
+}

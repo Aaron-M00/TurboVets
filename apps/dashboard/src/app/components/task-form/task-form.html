@@ -1,0 +1,93 @@
+<div class="fixed inset-0 z-30 bg-black/50 flex items-end sm:items-center justify-center p-4" (click)="cancel.emit()">
+  <div class="bg-surface w-full max-w-md rounded-xl shadow-xl border border-line" (click)="$event.stopPropagation()">
+    <form (ngSubmit)="submit()" novalidate class="p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-base font-semibold">{{ mode() === 'create' ? 'New task' : 'Edit task' }}</h2>
+        <button type="button" (click)="cancel.emit()" class="text-muted hover:text-ink text-sm">Close</button>
+      </div>
+
+      <label class="block">
+        <div class="flex items-baseline justify-between">
+          <span class="text-sm font-medium">Title</span>
+          <span class="text-[11px] text-muted">{{ title().length }}/{{ TITLE_MAX }}</span>
+        </div>
+        <input
+          type="text"
+          required
+          [maxlength]="TITLE_MAX"
+          [ngModel]="title()"
+          (ngModelChange)="title.set($event)"
+          name="title"
+          class="mt-1 w-full rounded-md border bg-surface text-ink px-3 py-2 text-sm focus:border-brand"
+          [class.border-line]="!submitted() || !titleError()"
+          [class.border-red-500]="submitted() && titleError()"
+        />
+        @if (submitted() && titleError()) {
+          <span class="mt-1 block text-xs text-red-500">{{ titleError() }}</span>
+        }
+      </label>
+
+      <label class="block">
+        <div class="flex items-baseline justify-between">
+          <span class="text-sm font-medium">Description</span>
+          <span class="text-[11px] text-muted">{{ description().length }}/{{ DESCRIPTION_MAX }}</span>
+        </div>
+        <textarea
+          rows="3"
+          [maxlength]="DESCRIPTION_MAX"
+          [ngModel]="description()"
+          (ngModelChange)="description.set($event)"
+          name="description"
+          class="mt-1 w-full rounded-md border bg-surface text-ink px-3 py-2 text-sm focus:border-brand resize-none"
+          [class.border-line]="!submitted() || !descriptionError()"
+          [class.border-red-500]="submitted() && descriptionError()"
+        ></textarea>
+        @if (submitted() && descriptionError()) {
+          <span class="mt-1 block text-xs text-red-500">{{ descriptionError() }}</span>
+        }
+      </label>
+
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block">
+          <span class="text-sm font-medium">Category</span>
+          <select
+            [ngModel]="category()"
+            (ngModelChange)="category.set($event)"
+            name="category"
+            class="mt-1 w-full rounded-md border border-line bg-surface text-ink px-3 py-2 text-sm focus:border-brand"
+          >
+            <option [value]="TaskCategory.Work">Work</option>
+            <option [value]="TaskCategory.Personal">Personal</option>
+          </select>
+        </label>
+
+        <label class="block">
+          <span class="text-sm font-medium">Status</span>
+          <select
+            [ngModel]="status()"
+            (ngModelChange)="status.set($event)"
+            name="status"
+            class="mt-1 w-full rounded-md border border-line bg-surface text-ink px-3 py-2 text-sm focus:border-brand"
+          >
+            <option [value]="TaskStatus.Todo">To do</option>
+            <option [value]="TaskStatus.InProgress">In progress</option>
+            <option [value]="TaskStatus.Done">Done</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" (click)="cancel.emit()" class="px-3 py-2 text-sm rounded-md border border-line hover:bg-soft">
+          Cancel
+        </button>
+        <button
+          type="submit"
+          [disabled]="submitted() && !isValid()"
+          class="px-3 py-2 text-sm rounded-md bg-brand text-white hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {{ mode() === 'create' ? 'Create' : 'Save' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

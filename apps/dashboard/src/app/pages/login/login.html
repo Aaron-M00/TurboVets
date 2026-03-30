@@ -1,0 +1,82 @@
+<div class="min-h-screen flex items-center justify-center px-4 bg-page">
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+      <div class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand text-white font-semibold mb-3">T</div>
+      <h1 class="text-xl font-semibold tracking-tight">Sign in</h1>
+      <p class="text-sm text-muted mt-1">Task management dashboard</p>
+    </div>
+
+    <form (ngSubmit)="submit()" #f="ngForm" novalidate class="bg-surface border border-line rounded-xl shadow-card p-6 space-y-4">
+      <label class="block">
+        <span class="text-sm font-medium">Email</span>
+        <input
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+          email
+          [(ngModel)]="email"
+          #emailField="ngModel"
+          class="mt-1 w-full rounded-md border bg-surface px-3 py-2 text-sm text-ink focus:border-brand"
+          [class.border-line]="emailField.untouched || emailField.valid"
+          [class.border-red-500]="emailField.touched && emailField.invalid"
+        />
+        @if (emailField.touched && emailField.invalid) {
+          <span class="mt-1 block text-xs text-red-500">
+            @if (emailField.errors?.['required']) { Email is required. }
+            @else if (emailField.errors?.['email']) { Enter a valid email. }
+          </span>
+        }
+      </label>
+
+      <label class="block">
+        <span class="text-sm font-medium">Password</span>
+        <input
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          required
+          minlength="6"
+          [(ngModel)]="password"
+          #passwordField="ngModel"
+          class="mt-1 w-full rounded-md border bg-surface px-3 py-2 text-sm text-ink focus:border-brand"
+          [class.border-line]="passwordField.untouched || passwordField.valid"
+          [class.border-red-500]="passwordField.touched && passwordField.invalid"
+        />
+        @if (passwordField.touched && passwordField.invalid) {
+          <span class="mt-1 block text-xs text-red-500">
+            @if (passwordField.errors?.['required']) { Password is required. }
+            @else if (passwordField.errors?.['minlength']) { Must be at least 6 characters. }
+          </span>
+        }
+      </label>
+
+      @if (error()) {
+        <p class="text-sm text-red-500" role="alert">{{ error() }}</p>
+      }
+
+      <button
+        type="submit"
+        [disabled]="f.invalid || submitting()"
+        class="w-full inline-flex items-center justify-center rounded-md bg-brand text-white text-sm font-medium px-3 py-2 hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {{ submitting() ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+
+    <div class="mt-6 text-xs text-muted">
+      <p class="mb-2">Demo accounts (password: <code class="font-mono">password123</code>):</p>
+      <div class="grid gap-1.5">
+        <button type="button" (click)="fill('owner@acme.test')" class="text-left px-3 py-2 rounded-md border border-line bg-surface hover:border-brand">
+          <span class="font-medium text-ink">owner&#64;acme.test</span> · Owner
+        </button>
+        <button type="button" (click)="fill('admin@acme.test')" class="text-left px-3 py-2 rounded-md border border-line bg-surface hover:border-brand">
+          <span class="font-medium text-ink">admin&#64;acme.test</span> · Admin
+        </button>
+        <button type="button" (click)="fill('viewer@acme.test')" class="text-left px-3 py-2 rounded-md border border-line bg-surface hover:border-brand">
+          <span class="font-medium text-ink">viewer&#64;acme.test</span> · Viewer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
